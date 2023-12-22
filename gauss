@@ -1,0 +1,46 @@
+from PIL import Image
+import matplotlib.pyplot as plt
+
+def gauss(x0, y0, width, height, pix_vals):
+    rgb = [0, 0, 0]
+
+    for i in range(3):
+        total = 0
+        for X in range(x0-1, x0+2):
+            for Y in range(y0-1, y0+2):
+                if 0 <= X < width and 0 <= Y < height:
+                    if X == x0 and Y == y0:
+                        coef = 4
+                    elif X == x0 or Y == y0:
+                        coef = 2
+                    else:
+                        coef = 1
+                    rgb[i] += coef * pix_vals[width*Y + X][i]
+                    total += coef
+
+        rgb[i] = int(rgb[i] / total)
+        rgb[i] = min(255, rgb[i])
+
+    return tuple(rgb)
+
+with Image.open("valve.png") as image:
+    new_image = Image.new('RGB', (image.width, image.height))
+    pixel_values = list(image.getdata())
+
+    for x in range(0, image.width):
+        for y in range(0, image.height):
+            new_color = gauss(x, y, image.width, image.height, pixel_values)
+            new_image.putpixel((x, y), new_color)
+    
+    new_image.save("new_valve_gauss_medium.png")
+
+    plt.figure(figsize=(10, 5))
+    plt.subplot(1, 2, 1)
+    plt.title('Original Image')
+    plt.imshow(image)
+    plt.axis('off')
+    plt.subplot(1, 2, 2)
+    plt.title('Gaussian Blurred Image')
+    plt.imshow(new_image)
+    plt.axis('off')
+    plt.show()
